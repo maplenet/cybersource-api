@@ -5,6 +5,7 @@ import crypto from "crypto";
 import { AuthenticationStatus } from "../constants/enums";
 
 dotenv.config();
+const codeUser = "MAP0006";
 
 const API_BASE_URL = process.env.CYBERSOURCE_API_BASE_URL!;
 const MERCHANT_ID = process.env.CYBERSOURCE_MERCHANT_ID!;
@@ -66,16 +67,17 @@ async function cyberSourceRequest(
 
 export async function processPayment(body: any) {
   const isVisa = body.cardType === "001";
+  const typeCard = isVisa ? "001" : "002";
 
   const payload = {
-    clientReferenceInformation: { code: "prueba_001" },
+    clientReferenceInformation: { code: codeUser },
     processingInformation: {
       capture: true,
-      commerceIndicator: body.commerceIndicator,
+      commerceIndicator: "vbv",
     },
     paymentInformation: {
       card: {
-        type: body.cardType,
+        type: typeCard,
         number: body.cardNumber,
         expirationMonth: body.expirationMonth,
         expirationYear: body.expirationYear,
@@ -85,7 +87,7 @@ export async function processPayment(body: any) {
     orderInformation: {
       amountDetails: {
         totalAmount: body.totalAmount,
-        currency: "BOB",
+        currency: "USD",
       },
       billTo: body.billTo,
     },
@@ -110,20 +112,13 @@ export async function createAuthenticationSetup(body: any) {
   const cardType = body.cardNumber.startsWith("4") ? "001" : "002";
 
   const payload = {
-    clientReferenceInformation: { code: "prueba_001" },
-    orderInformation: {
-      amountDetails: {
-        totalAmount: body.totalAmount,
-        currency: "BOB",
-      },
-    },
+    clientReferenceInformation: { code: codeUser },
     paymentInformation: {
       card: {
         type: cardType,
         number: body.cardNumber,
         expirationMonth: body.expirationMonth,
         expirationYear: body.expirationYear,
-        securityCode: body.securityCode,
       },
     },
   };
@@ -135,13 +130,10 @@ export async function createAuthenticationSetup(body: any) {
 // }
 
 export async function createAuthentication(body: any) {
+  const cardType = body.cardNumber.startsWith("4") ? "001" : "002";
+
   const payload = {
-    clientReferenceInformation: { code: "prueba_001" },
-    consumerAuthenticationInformation: {
-      referenceId: body.referenceId,
-      returnUrl: process.env.RETURN_URL,
-      transactionMode: "S",
-    },
+    clientReferenceInformation: { code: codeUser },
     orderInformation: {
       amountDetails: {
         totalAmount: body.totalAmount,
@@ -151,12 +143,17 @@ export async function createAuthentication(body: any) {
     },
     paymentInformation: {
       card: {
-        type: body.cardType,
+        type: cardType,
         number: body.cardNumber,
         expirationMonth: body.expirationMonth,
         expirationYear: body.expirationYear,
         securityCode: body.securityCode,
       },
+    },
+    consumerAuthenticationInformation: {
+      referenceId: body.referenceId,
+      returnUrl: "https://www.google.com",
+      transactionMode: "S",
     },
   };
 
@@ -168,7 +165,7 @@ export async function createAuthentication(body: any) {
 
   if (
     response.consumerAuthenticationInformation?.status ===
-    AuthenticationStatus.AUTHENTICATION_SUCCESSFUL
+    "AUTHENTICATION_SUCCESSFUL"
   ) {
     return {
       proceedToPayment: true,
@@ -180,8 +177,18 @@ export async function createAuthentication(body: any) {
   return response;
 }
 
-export async function getAuthenticationResult(body: object) {
-  return cyberSourceRequest("/risk/v1/authentication-results", "POST", body);
+// export async function getAuthenticationResult(body: object) {
+//   return cyberSourceRequest("/risk/v1/authentication-results", "POST", body);
+// }
+
+export async function getAuthenticationResult(body: any) {
+  const payload = {
+    clientReferenceInformation: { code: codeUser },
+    consumerAuthenticationInformation: {
+      authenticationTransactionId: body.authenticationTransactionId,
+    },
+  };
+  return cyberSourceRequest("/risk/v1/authentication-results", "POST", payload);
 }
 
 export async function checkEnrollment(body: object) {
