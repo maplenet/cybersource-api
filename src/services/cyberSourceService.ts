@@ -61,53 +61,6 @@ async function cyberSourceRequest(
   }
 }
 
-// export async function processPayment(body: object) {
-//   return cyberSourceRequest("/pts/v2/payments", "POST", body);
-// }
-
-export async function processPayment(body: any) {
-  const isVisa = body.cardType === "001";
-  const typeCard = isVisa ? "001" : "002";
-
-  const payload = {
-    clientReferenceInformation: { code: codeUser },
-    processingInformation: {
-      capture: true,
-      commerceIndicator: "vbv",
-    },
-    paymentInformation: {
-      card: {
-        type: typeCard,
-        number: body.cardNumber,
-        expirationMonth: body.expirationMonth,
-        expirationYear: body.expirationYear,
-        securityCode: body.securityCode,
-      },
-    },
-    orderInformation: {
-      amountDetails: {
-        totalAmount: body.totalAmount,
-        currency: "USD",
-      },
-      billTo: body.billTo,
-    },
-    consumerAuthenticationInformation: {
-      cavv: isVisa ? body.cavv : "",
-      xid: isVisa ? body.xid : "",
-      ucafCollectionIndicator: isVisa ? "" : body.ucafCollectionIndicator,
-      ucafAuthenticationData: isVisa ? "" : body.ucafAuthenticationData,
-      directoryServerTransactionId: body.directoryServerTransactionId,
-      paSpecificationVersion: "2.1.0",
-    },
-  };
-
-  return cyberSourceRequest("/pts/v2/payments", "POST", payload);
-}
-
-// export async function createAuthenticationSetup(body: object) {
-//   return cyberSourceRequest("/risk/v1/authentication-setups", "POST", body);
-// }
-
 export async function createAuthenticationSetup(body: any) {
   const cardType = body.cardNumber.startsWith("4") ? "001" : "002";
 
@@ -124,10 +77,6 @@ export async function createAuthenticationSetup(body: any) {
   };
   return cyberSourceRequest("/risk/v1/authentication-setups", "POST", payload);
 }
-
-// export async function createAuthentication(body: object) {
-//   return cyberSourceRequest("/risk/v1/authentications", "POST", body);
-// }
 
 export async function createAuthentication(body: any) {
   const cardType = body.cardNumber.startsWith("4") ? "001" : "002";
@@ -177,13 +126,26 @@ export async function createAuthentication(body: any) {
   return response;
 }
 
-// export async function getAuthenticationResult(body: object) {
-//   return cyberSourceRequest("/risk/v1/authentication-results", "POST", body);
-// }
-
 export async function getAuthenticationResult(body: any) {
+  const cardType = body.cardNumber.startsWith("4") ? "001" : "002";
   const payload = {
     clientReferenceInformation: { code: codeUser },
+    orderInformation: {
+      amountDetails: {
+        totalAmount: body.totalAmount,
+        currency: "BOB",
+      },
+      billTo: body.billTo,
+    },
+    paymentInformation: {
+      card: {
+        type: cardType,
+        number: body.cardNumber,
+        expirationMonth: body.expirationMonth,
+        expirationYear: body.expirationYear,
+        securityCode: body.securityCode,
+      },
+    },
     consumerAuthenticationInformation: {
       authenticationTransactionId: body.authenticationTransactionId,
     },
@@ -191,6 +153,61 @@ export async function getAuthenticationResult(body: any) {
   return cyberSourceRequest("/risk/v1/authentication-results", "POST", payload);
 }
 
-export async function checkEnrollment(body: object) {
-  return cyberSourceRequest("/risk/v1/authentications", "POST", body);
+export async function processPayment(body: any) {
+  const isVisa = body.cardType === "001";
+  const typeCard = isVisa ? "001" : "002";
+
+  const payload = {
+    clientReferenceInformation: { code: codeUser },
+    processingInformation: {
+      capture: true,
+      commerceIndicator: "vbv",
+    },
+    paymentInformation: {
+      card: {
+        type: typeCard,
+        number: body.cardNumber,
+        expirationMonth: body.expirationMonth,
+        expirationYear: body.expirationYear,
+        securityCode: body.securityCode,
+      },
+    },
+    orderInformation: {
+      amountDetails: {
+        totalAmount: body.totalAmount,
+        currency: "BOB",
+      },
+      billTo: body.billTo,
+    },
+    consumerAuthenticationInformation: {
+      cavv: isVisa ? body.cavv : "",
+      xid: isVisa ? body.xid : "",
+      ucafCollectionIndicator: isVisa ? "" : body.ucafCollectionIndicator,
+      ucafAuthenticationData: isVisa ? "" : body.ucafAuthenticationData,
+      directoryServerTransactionId: body.directoryServerTransactionId,
+      paSpecificationVersion: "2.1.0",
+    },
+  };
+
+  return cyberSourceRequest("/pts/v2/payments", "POST", payload);
 }
+
+// export async function processPayment(body: object) {
+//   return cyberSourceRequest("/pts/v2/payments", "POST", body);
+// }
+
+// export async function createAuthenticationSetup(body: object) {
+//   return cyberSourceRequest("/risk/v1/authentication-setups", "POST", body);
+// }
+
+// export async function checkEnrollment(body: object) {
+//   return cyberSourceRequest("/risk/v1/authentications", "POST", body);
+// }
+
+// export async function createAuthentication(body: object) {
+//   return cyberSourceRequest("/risk/v1/authentications", "POST", body);
+// }
+
+// export async function getAuthenticationResult(body: object) {
+//   return cyberSourceRequest("/risk/v1/authentication-results", "POST", body);
+// }
