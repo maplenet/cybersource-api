@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import cyberSourceRoutes from "./src/routes/cyberSourceRoutes";
+import cyberSourceRoutes from "./src/routes/cyberSource.routes";
 import express from "express";
 import cors from "cors";
 

@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import { computeHttpSignature } from "../utils/signUtils";
 import crypto from "crypto";
 import { AuthenticationStatus } from "../constants/enums";
+import { AuthenticationDTO, CreateAuthenticationDTO, GetAuthenticationResultDTO, ProcessPaymentDTO } from "../dto/cyberSource.dto";
 
 dotenv.config();
 const codeUser = "MAP0006";
@@ -25,7 +26,6 @@ async function cyberSourceRequest(
     "(request-target)": `${method.toLowerCase()} ${endpoint}`,
     "v-c-merchant-id": MERCHANT_ID,
   };
-
   if (body) {
     const digest = crypto
       .createHash("sha256")
@@ -56,7 +56,6 @@ async function cyberSourceRequest(
 
     return response.data;
   } catch (error) {
-    console.error("CyberSource API error:", error);
     throw new Error("Error en la API de CyberSource");
   }
 }
@@ -64,7 +63,7 @@ async function cyberSourceRequest(
 export async function createAuthenticationSetup(body: any) {
   const cardType = body.cardNumber.startsWith("4") ? "001" : "002";
 
-  const payload = {
+  const payload: AuthenticationDTO = {
     clientReferenceInformation: { code: codeUser },
     paymentInformation: {
       card: {
@@ -81,15 +80,8 @@ export async function createAuthenticationSetup(body: any) {
 export async function createAuthentication(body: any) {
   const cardType = body.cardNumber.startsWith("4") ? "001" : "002";
 
-  const payload = {
+  const payload: CreateAuthenticationDTO = {
     clientReferenceInformation: { code: codeUser },
-    orderInformation: {
-      amountDetails: {
-        totalAmount: body.totalAmount,
-        currency: "BOB",
-      },
-      billTo: body.billTo,
-    },
     paymentInformation: {
       card: {
         type: cardType,
@@ -98,6 +90,13 @@ export async function createAuthentication(body: any) {
         expirationYear: body.expirationYear,
         securityCode: body.securityCode,
       },
+    },
+    orderInformation: {
+      amountDetails: {
+        totalAmount: body.totalAmount,
+        currency: "BOB",
+      },
+      billTo: body.billTo,
     },
     consumerAuthenticationInformation: {
       referenceId: body.referenceId,
@@ -128,15 +127,8 @@ export async function createAuthentication(body: any) {
 
 export async function getAuthenticationResult(body: any) {
   const cardType = body.cardNumber.startsWith("4") ? "001" : "002";
-  const payload = {
+  const payload: GetAuthenticationResultDTO = {
     clientReferenceInformation: { code: codeUser },
-    orderInformation: {
-      amountDetails: {
-        totalAmount: body.totalAmount,
-        currency: "BOB",
-      },
-      billTo: body.billTo,
-    },
     paymentInformation: {
       card: {
         type: cardType,
@@ -145,6 +137,13 @@ export async function getAuthenticationResult(body: any) {
         expirationYear: body.expirationYear,
         securityCode: body.securityCode,
       },
+    },
+    orderInformation: {
+      amountDetails: {
+        totalAmount: body.totalAmount,
+        currency: "BOB",
+      },
+      billTo: body.billTo,
     },
     consumerAuthenticationInformation: {
       authenticationTransactionId: body.authenticationTransactionId,
@@ -157,11 +156,11 @@ export async function processPayment(body: any) {
   const isVisa = body.cardType === "001";
   const typeCard = isVisa ? "001" : "002";
 
-  const payload = {
+  const payload: ProcessPaymentDTO = {
     clientReferenceInformation: { code: codeUser },
     processingInformation: {
       capture: true,
-      commerceIndicator: "vbv",
+      commerceIndicator: body.commerceIndicator,
     },
     paymentInformation: {
       card: {
@@ -185,29 +184,9 @@ export async function processPayment(body: any) {
       ucafCollectionIndicator: isVisa ? "" : body.ucafCollectionIndicator,
       ucafAuthenticationData: isVisa ? "" : body.ucafAuthenticationData,
       directoryServerTransactionId: body.directoryServerTransactionId,
-      paSpecificationVersion: "2.1.0",
+      paSpecificationVersion: body.paSpecificationVersion,
     },
   };
 
   return cyberSourceRequest("/pts/v2/payments", "POST", payload);
 }
-
-// export async function processPayment(body: object) {
-//   return cyberSourceRequest("/pts/v2/payments", "POST", body);
-// }
-
-// export async function createAuthenticationSetup(body: object) {
-//   return cyberSourceRequest("/risk/v1/authentication-setups", "POST", body);
-// }
-
-// export async function checkEnrollment(body: object) {
-//   return cyberSourceRequest("/risk/v1/authentications", "POST", body);
-// }
-
-// export async function createAuthentication(body: object) {
-//   return cyberSourceRequest("/risk/v1/authentications", "POST", body);
-// }
-
-// export async function getAuthenticationResult(body: object) {
-//   return cyberSourceRequest("/risk/v1/authentication-results", "POST", body);
-// }

@@ -4,15 +4,13 @@ import {
   createAuthenticationSetup,
   createAuthentication,
   getAuthenticationResult,
-  // checkEnrollment,
-} from "../services/cyberSourceService";
+} from "../services/cyberSource.service";
 
 const router = Router();
 
 router.post("/auth-setup", async (req, res) => {
   try {
     const data = await createAuthenticationSetup(req.body);
-    console.log(data);
     res.json(data);
   } catch (error) {
     res
@@ -49,16 +47,5 @@ router.post("/payment", async (req, res) => {
     res.status(500).json({ error: "Error procesando el pago" });
   }
 });
-
-// router.post("/check-enrollment", async (req, res) => {
-//   try {
-//     const data = await checkEnrollment(req.body);
-//     res.json(data);
-//   } catch (error) {
-//     res
-//       .status(500)
-//       .json({ error: "Error verificando inscripción en 3D Secure" });
-//   }
-// });
 
 export default router;
