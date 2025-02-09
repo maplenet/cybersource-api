@@ -3,7 +3,12 @@ import dotenv from "dotenv";
 import { computeHttpSignature } from "../utils/signUtils";
 import crypto from "crypto";
 import { AuthenticationStatus } from "../constants/enums";
-import { AuthenticationDTO, CreateAuthenticationDTO, GetAuthenticationResultDTO, ProcessPaymentDTO } from "../dto/cyberSource.dto";
+import {
+  AuthenticationDTO,
+  CreateAuthenticationDTO,
+  GetAuthenticationResultDTO,
+  ProcessPaymentDTO,
+} from "../dto/cyberSource.dto";
 
 dotenv.config();
 const codeUser = "MAP0006";
@@ -61,31 +66,35 @@ async function cyberSourceRequest(
 }
 
 export async function createAuthenticationSetup(body: any) {
-  const cardType = body.cardNumber.startsWith("4") ? "001" : "002";
+  const cardType = body.number.startsWith("4") ? "001" : "002";
 
   const payload: AuthenticationDTO = {
     clientReferenceInformation: { code: codeUser },
     paymentInformation: {
       card: {
         type: cardType,
-        number: body.cardNumber,
+        number: body.number,
         expirationMonth: body.expirationMonth,
         expirationYear: body.expirationYear,
       },
     },
   };
-  return cyberSourceRequest("/risk/v1/authentication-setups", "POST", payload);
+  return await cyberSourceRequest(
+    "/risk/v1/authentication-setups",
+    "POST",
+    payload
+  );
 }
 
 export async function createAuthentication(body: any) {
-  const cardType = body.cardNumber.startsWith("4") ? "001" : "002";
+  const cardType = body.number.startsWith("4") ? "001" : "002";
 
   const payload: CreateAuthenticationDTO = {
     clientReferenceInformation: { code: codeUser },
     paymentInformation: {
       card: {
         type: cardType,
-        number: body.cardNumber,
+        number: body.number,
         expirationMonth: body.expirationMonth,
         expirationYear: body.expirationYear,
         securityCode: body.securityCode,
@@ -104,35 +113,33 @@ export async function createAuthentication(body: any) {
       transactionMode: "S",
     },
   };
-
   const response = await cyberSourceRequest(
     "/risk/v1/authentications",
     "POST",
     payload
   );
 
-  if (
-    response.consumerAuthenticationInformation?.status ===
-    "AUTHENTICATION_SUCCESSFUL"
-  ) {
-    return {
-      proceedToPayment: true,
-      authenticationTransactionId:
-        response.consumerAuthenticationInformation.authenticationTransactionId,
-    };
-  }
-
+  // if (
+  //   response.consumerAuthenticationInformation?.status ===
+  //   "AUTHENTICATION_SUCCESSFUL"
+  // ) {
+  //   return {
+  //     proceedToPayment: true,
+  //     authenticationTransactionId:
+  //       response.consumerAuthenticationInformation.authenticationTransactionId,
+  //   };
+  // }
   return response;
 }
 
 export async function getAuthenticationResult(body: any) {
-  const cardType = body.cardNumber.startsWith("4") ? "001" : "002";
+  const cardType = body.number.startsWith("4") ? "001" : "002";
   const payload: GetAuthenticationResultDTO = {
     clientReferenceInformation: { code: codeUser },
     paymentInformation: {
       card: {
         type: cardType,
-        number: body.cardNumber,
+        number: body.number,
         expirationMonth: body.expirationMonth,
         expirationYear: body.expirationYear,
         securityCode: body.securityCode,
@@ -149,12 +156,12 @@ export async function getAuthenticationResult(body: any) {
       authenticationTransactionId: body.authenticationTransactionId,
     },
   };
-  return cyberSourceRequest("/risk/v1/authentication-results", "POST", payload);
+  return await cyberSourceRequest("/risk/v1/authentication-results", "POST", payload);
 }
 
 export async function processPayment(body: any) {
-  const isVisa = body.cardType === "001";
-  const typeCard = isVisa ? "001" : "002";
+  const cardType = body.number.startsWith("4") ? "001" : "002";
+  const isVisa = cardType === "001" ? true : false;
 
   const payload: ProcessPaymentDTO = {
     clientReferenceInformation: { code: codeUser },
@@ -164,8 +171,8 @@ export async function processPayment(body: any) {
     },
     paymentInformation: {
       card: {
-        type: typeCard,
-        number: body.cardNumber,
+        type: cardType,
+        number: body.number,
         expirationMonth: body.expirationMonth,
         expirationYear: body.expirationYear,
         securityCode: body.securityCode,
@@ -188,5 +195,5 @@ export async function processPayment(body: any) {
     },
   };
 
-  return cyberSourceRequest("/pts/v2/payments", "POST", payload);
+  return await cyberSourceRequest("/pts/v2/payments", "POST", payload);
 }
