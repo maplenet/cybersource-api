@@ -79,11 +79,18 @@ export async function createAuthenticationSetup(body: any) {
       },
     },
   };
-  return await cyberSourceRequest(
+  const response = await cyberSourceRequest(
     "/risk/v1/authentication-setups",
     "POST",
     payload
   );
+  return {
+    Status: response.status,
+    accessToken: response.consumerAuthenticationInformation?.accessToken,
+    deviceDataCollectionUrl:
+      response.consumerAuthenticationInformation.deviceDataCollectionUrl,
+    referenceId: response.consumerAuthenticationInformation.referenceId,
+  };
 }
 
 export async function createAuthentication(body: any) {
@@ -119,17 +126,26 @@ export async function createAuthentication(body: any) {
     payload
   );
 
-  // if (
-  //   response.consumerAuthenticationInformation?.status ===
-  //   "AUTHENTICATION_SUCCESSFUL"
-  // ) {
-  //   return {
-  //     proceedToPayment: true,
-  //     authenticationTransactionId:
-  //       response.consumerAuthenticationInformation.authenticationTransactionId,
-  //   };
-  // }
-  return response;
+  return {
+    Status: response.status,
+    directoryServerTransactionId:
+      response.consumerAuthenticationInformation
+        ?.directoryServerTransactionId || "",
+    specificationVersion:
+      response.consumerAuthenticationInformation?.specificationVersion || "",
+    ucafCollectionIndicator:
+      response.consumerAuthenticationInformation?.ucafCollectionIndicator || "",
+    ucafAuthenticationData:
+      response.consumerAuthenticationInformation?.ucafAuthenticationData || "",
+    xid: response.consumerAuthenticationInformation?.xid || "",
+    cavv: response.consumerAuthenticationInformation?.cavv || "",
+    accessToken: response.consumerAuthenticationInformation?.accessToken || "",
+    stepUpUrl: response.consumerAuthenticationInformation?.stepUpUrl || "",
+    authenticationTransactionId:
+      response.consumerAuthenticationInformation?.authenticationTransactionId ||
+      "",
+    indicator: response.consumerAuthenticationInformation?.indicator || "",
+  };
 }
 
 export async function getAuthenticationResult(body: any) {
@@ -156,14 +172,32 @@ export async function getAuthenticationResult(body: any) {
       authenticationTransactionId: body.authenticationTransactionId,
     },
   };
-  return await cyberSourceRequest("/risk/v1/authentication-results", "POST", payload);
+
+  const response = await cyberSourceRequest(
+    "/risk/v1/authentication-results",
+    "POST",
+    payload
+  );
+  return {
+    Status: response.status,
+    directoryServerTransactionId:
+      response.consumerAuthenticationInformation
+        ?.directoryServerTransactionId || "",
+    cavv: response.consumerAuthenticationInformation?.cavv || "",
+    xid: response.consumerAuthenticationInformation?.xid || "",
+    ucafCollectionIndicator:
+      response.consumerAuthenticationInformation?.ucafCollectionIndicator || "",
+    ucafAuthenticationData:
+      response.consumerAuthenticationInformation?.ucafAuthenticationData || "",
+    indicator: response.consumerAuthenticationInformation?.indicator || "",
+  };
 }
 
 export async function processPayment(body: any) {
   const cardType = body.number.startsWith("4") ? "001" : "002";
   const isVisa = cardType === "001" ? true : false;
 
-  const payload: ProcessPaymentDTO = {
+  const payload = {
     clientReferenceInformation: { code: codeUser },
     processingInformation: {
       capture: true,
@@ -195,5 +229,13 @@ export async function processPayment(body: any) {
     },
   };
 
-  return await cyberSourceRequest("/pts/v2/payments", "POST", payload);
+  const response = await cyberSourceRequest(
+    "/pts/v2/payments",
+    "POST",
+    payload
+  );
+
+  return {
+    Status: response.status,
+  };
 }
