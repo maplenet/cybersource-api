@@ -18,6 +18,9 @@ const MERCHANT_ID = process.env.CYBERSOURCE_MERCHANT_ID!;
 const KEY_ID = process.env.CYBERSOURCE_KEY_ID!;
 const SECRET_KEY = process.env.CYBERSOURCE_SECRET_KEY!;
 
+const QR_BASE_URL = process.env.QR_BASE_URL!;
+const QR_X_API_KEY = process.env.QR_X_API_KEY!;
+
 async function cyberSourceRequest(
   endpoint: string,
   method: "GET" | "POST",
@@ -238,4 +241,44 @@ export async function processPayment(body: any) {
   return {
     Status: response.status,
   };
+}
+
+export async function generateQr(body: any) {
+  const payload = {
+    numeroReferencia: body.referenceNumber,
+    glosa: "453030|M+APIQR|7900|cobro servicio m+",
+    monto: body.amount,
+    moneda: "BOB",
+    canal: "WEB",
+    tiempoQr: "00:15:00",
+  };
+  const response = await axios.post(`${QR_BASE_URL}/generarQr`, payload, {
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": QR_X_API_KEY,
+    },
+    httpsAgent: new (require("https").Agent)({ rejectUnauthorized: false }),
+  });
+
+  return response.data;
+}
+
+export async function verifyQr(referenceNumber: string) {
+  try {
+    const response = await axios.get(
+      `${QR_BASE_URL}/verificaQr/${referenceNumber}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": QR_X_API_KEY,
+        },
+        httpsAgent: new (require("https").Agent)({ rejectUnauthorized: false }),
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.detalleRespuesta || "Error verificando QR"
+    );
+  }
 }
