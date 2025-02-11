@@ -75,4 +75,35 @@ router.get("/verifyQr/:referenceNumber", async (req: any, res: any) => {
   }
 });
 
+const QR_EXPECTED_BASIC_AUTH = process.env.QR_EXPECTED_BASIC_AUTH!;
+
+router.post("/qr/confirmed", async (req: any, res: any) => {
+  const authHeader = req.headers["authorization"];
+  const apiKey = req.headers["x-api-key"];
+
+  if (!apiKey && authHeader !== QR_EXPECTED_BASIC_AUTH) {
+    return res.status(403).json({
+      numeroReferencia: null,
+      codigoRespuesta: "05",
+      detalleRespuesta: "Acceso no autorizado",
+    });
+  }
+
+  const { numeroReferencia, estado, transacciones } = req.body;
+
+  if (!numeroReferencia || !estado || !transacciones) {
+    return res.status(400).json({
+      numeroReferencia: numeroReferencia || null,
+      codigoRespuesta: "05",
+      detalleRespuesta: "Datos inválidos en la solicitud",
+    });
+  }
+
+  return res.json({
+    numeroReferencia,
+    codigoRespuesta: "00",
+    detalleRespuesta: null,
+  });
+});
+
 export default router;

@@ -17,6 +17,7 @@ const API_BASE_URL = process.env.CYBERSOURCE_API_BASE_URL!;
 const MERCHANT_ID = process.env.CYBERSOURCE_MERCHANT_ID!;
 const KEY_ID = process.env.CYBERSOURCE_KEY_ID!;
 const SECRET_KEY = process.env.CYBERSOURCE_SECRET_KEY!;
+const RETURN_URL = process.env.CYBERSOURCE_RETURN_URL!;
 
 const QR_BASE_URL = process.env.QR_BASE_URL!;
 const QR_X_API_KEY = process.env.QR_X_API_KEY!;
@@ -72,7 +73,7 @@ export async function createAuthenticationSetup(body: any) {
   const cardType = body.number.startsWith("4") ? "001" : "002";
 
   const payload: AuthenticationDTO = {
-    clientReferenceInformation: { code: codeUser },
+    clientReferenceInformation: { code: body.code || codeUser },
     paymentInformation: {
       card: {
         type: cardType,
@@ -100,7 +101,7 @@ export async function createAuthentication(body: any) {
   const cardType = body.number.startsWith("4") ? "001" : "002";
 
   const payload: CreateAuthenticationDTO = {
-    clientReferenceInformation: { code: codeUser },
+    clientReferenceInformation: { code: body.code || codeUser },
     paymentInformation: {
       card: {
         type: cardType,
@@ -119,7 +120,7 @@ export async function createAuthentication(body: any) {
     },
     consumerAuthenticationInformation: {
       referenceId: body.referenceId,
-      returnUrl: "https://www.google.com",
+      returnUrl: RETURN_URL,
       transactionMode: "S",
     },
   };
@@ -154,7 +155,7 @@ export async function createAuthentication(body: any) {
 export async function getAuthenticationResult(body: any) {
   const cardType = body.number.startsWith("4") ? "001" : "002";
   const payload: GetAuthenticationResultDTO = {
-    clientReferenceInformation: { code: codeUser },
+    clientReferenceInformation: { code: body.code || codeUser },
     paymentInformation: {
       card: {
         type: cardType,
@@ -201,7 +202,7 @@ export async function processPayment(body: any) {
   const isVisa = cardType === "001" ? true : false;
 
   const payload = {
-    clientReferenceInformation: { code: codeUser },
+    clientReferenceInformation: { code: body.code || codeUser },
     processingInformation: {
       capture: true,
       commerceIndicator: body.commerceIndicator,
@@ -282,3 +283,19 @@ export async function verifyQr(referenceNumber: string) {
     );
   }
 }
+
+// export async function qrConfirmed(req: any, res: any) {
+//   const authHeader = req.headers.get("authorization");
+//   const apiKey = req.headers.get("x-api-key");
+
+//   if (!apiKey && authHeader !== QR_EXPECTED_BASIC_AUTH) {
+//     return res.status(403).json({
+//       numeroReferencia: null,
+//       codigoRespuesta: "05",
+//       detalleRespuesta: "Acceso no autorizado",
+//     });
+//   }
+
+//   const response = await processQrConfirmation(req.body);
+//   res.json(response);
+// }
