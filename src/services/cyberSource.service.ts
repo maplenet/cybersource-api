@@ -231,7 +231,42 @@ export async function processPayment(body: any) {
     deviceInformation: {
       fingerprintSessionId: body.sessionID,
     },
+    merchantDefinedInformation: [
+      {
+        key: 1,
+        value: "SI",
+      },
+      {
+        key: 4,
+        value: body.datePayment,
+      },
+      {
+        key: 6,
+        value: "SI",
+      },
+      {
+        key: 9,
+        value: "Página web",
+      },
+      {
+        key: 11,
+        value: body.documentNumber,
+      },
+      {
+        key: 87,
+        value: "MAPV" + body.planId,
+      },
+      {
+        key: 90,
+        value: "Servicio OTT",
+      },
+      {
+        key: 91,
+        value: body.totalAmount,
+      },
+    ],
   };
+  console.log(payload);
 
   const response = await cyberSourceRequest(
     "/pts/v2/payments",
