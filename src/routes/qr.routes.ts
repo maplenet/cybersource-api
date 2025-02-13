@@ -64,6 +64,12 @@ router.post("/confirmed", async (req: any, res: any) => {
       codigoRespuesta: "03",
       detalleRespuesta: "QR expirado",
     });
+  } else if (estado == "05") {
+    return res.json({
+      numeroReferencia,
+      codigoRespuesta: "05",
+      detalleRespuesta: "QR no válido",
+    });
   }
 
   return res.json({
