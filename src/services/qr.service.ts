@@ -9,7 +9,7 @@ const QR_X_API_KEY = process.env.QR_X_API_KEY!;
 export async function generateQr(body: any) {
   const payload = {
     numeroReferencia: body.referenceNumber,
-    glosa: "453030|M+APIQR|7900|cobro servicio m+",
+    glosa: "452813|M+APIQR|4814|cobro servicio m+",
     monto: body.amount,
     moneda: "BOB",
     canal: "WEB",
