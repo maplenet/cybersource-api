@@ -134,6 +134,8 @@ export async function createAuthentication(body: any) {
         ?.directoryServerTransactionId || "",
     specificationVersion:
       response.consumerAuthenticationInformation?.specificationVersion || "",
+    commerceIndicator:
+      response.consumerAuthenticationInformation?.ecommerceIndicator || "",
     ucafCollectionIndicator:
       response.consumerAuthenticationInformation?.ucafCollectionIndicator || "",
     ucafAuthenticationData:
@@ -145,7 +147,6 @@ export async function createAuthentication(body: any) {
     authenticationTransactionId:
       response.consumerAuthenticationInformation?.authenticationTransactionId ||
       "",
-    indicator: response.consumerAuthenticationInformation?.indicator || "",
   };
 }
 
@@ -190,7 +191,8 @@ export async function getAuthenticationResult(body: any) {
       response.consumerAuthenticationInformation?.ucafCollectionIndicator || "",
     ucafAuthenticationData:
       response.consumerAuthenticationInformation?.ucafAuthenticationData || "",
-    indicator: response.consumerAuthenticationInformation?.indicator || "",
+    commerceIndicator:
+      response.consumerAuthenticationInformation?.commerceIndicator || "",
   };
 }
 
@@ -266,7 +268,6 @@ export async function processPayment(body: any) {
       },
     ],
   };
-  console.log(payload);
 
   const response = await cyberSourceRequest(
     "/pts/v2/payments",
