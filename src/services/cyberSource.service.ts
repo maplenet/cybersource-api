@@ -192,7 +192,9 @@ export async function getAuthenticationResult(body: any) {
     ucafAuthenticationData:
       response.consumerAuthenticationInformation?.ucafAuthenticationData || "",
     commerceIndicator:
-      response.consumerAuthenticationInformation?.commerceIndicator || "",
+      response.consumerAuthenticationInformation?.indicator || "",
+    specificationVersion:
+      response.consumerAuthenticationInformation?.specificationVersion || "",
   };
 }
 
