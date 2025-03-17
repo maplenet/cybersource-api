@@ -174,7 +174,7 @@ export async function getAuthenticationResult(body: any) {
       authenticationTransactionId: body.authenticationTransactionId,
     },
   };
-
+  
   const response = await cyberSourceRequest(
     "/risk/v1/authentication-results",
     "POST",
@@ -279,5 +279,6 @@ export async function processPayment(body: any) {
 
   return {
     Status: response.status,
+    referenceNumber: response.processorInformation?.retrievalReferenceNumber || "",
   };
 }
