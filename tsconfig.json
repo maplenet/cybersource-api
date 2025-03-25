@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES6",
+    "target": "ES2024",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "module": "commonjs",
