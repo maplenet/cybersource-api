@@ -1,5 +1,6 @@
 import axios from "axios";
 import { qr } from "../config/env";
+import { Qr } from "../entities/qr.entity";
 
 export async function generateQr(body: any) {
   const payload = {
@@ -17,6 +18,13 @@ export async function generateQr(body: any) {
     },
     httpsAgent: new (require("https").Agent)({ rejectUnauthorized: false }),
   });
+
+  const qrData = new Qr();
+  qrData.amount = body.amount;
+  qrData.refNumber = response.data.numeroReferencia;
+  qrData.idUser = body.idUser;
+
+  qrData.save();
 
   return response.data;
 }
