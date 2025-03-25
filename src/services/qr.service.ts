@@ -1,24 +1,19 @@
 import axios from "axios";
-import dotenv from "dotenv";
-
-dotenv.config();
-
-const QR_BASE_URL = process.env.QR_BASE_URL!;
-const QR_X_API_KEY = process.env.QR_X_API_KEY!;
+import { qr } from "../config/env";
 
 export async function generateQr(body: any) {
   const payload = {
     numeroReferencia: body.referenceNumber,
-    glosa: "452813|M+APIQR|4814|cobro servicio m+",
+    glosa: qr.API_GLOSA,
     monto: body.amount,
     moneda: "BOB",
     canal: "WEB",
     tiempoQr: "00:15:00",
   };
-  const response = await axios.post(`${QR_BASE_URL}/generarQr`, payload, {
+  const response = await axios.post(`${qr.API_BASE_URL}/generarQr`, payload, {
     headers: {
       "Content-Type": "application/json",
-      "x-api-key": QR_X_API_KEY,
+      "x-api-key": qr.API_KEY,
     },
     httpsAgent: new (require("https").Agent)({ rejectUnauthorized: false }),
   });
@@ -29,11 +24,11 @@ export async function generateQr(body: any) {
 export async function verifyQr(referenceNumber: string) {
   try {
     const response = await axios.get(
-      `${QR_BASE_URL}/verificaQr/${referenceNumber}`,
+      `${qr.API_BASE_URL}/verificaQr/${referenceNumber}`,
       {
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": QR_X_API_KEY,
+          "x-api-key": qr.API_KEY,
         },
         httpsAgent: new (require("https").Agent)({ rejectUnauthorized: false }),
       }
