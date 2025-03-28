@@ -1,10 +1,23 @@
 import { Router } from "express";
 import { generateQr, verifyQr } from "../services/qr.service";
 import { QrDTO } from "../dto/qr.dto";
+import * as fs from "fs";
+import * as path from "path";
 
 const router = Router();
 
 const QR_API_KEY_VALIDATION = process.env.QR_API_KEY_VALIDATION!;
+
+const guardarSolicitud = (data: any) => {
+  const filePath = path.join(__dirname, "../../solicitudes.log");
+  const logData = JSON.stringify(data) + "\n";
+
+  fs.appendFile(filePath, logData, (err) => {
+    if (err) {
+      console.error("Error al guardar solicitud:", err);
+    }
+  });
+};
 
 router.post("/generateQr", async (req, res) => {
   try {
@@ -43,7 +56,8 @@ router.post("/confirmed", async (req: any, res: any) => {
   }
 
   const { numeroReferencia, estado, transacciones }: QrDTO = req.body;
-
+  const resp = guardarSolicitud(req.body);
+  console.log(resp);
   if (!numeroReferencia || !estado || !transacciones) {
     return res.status(400).json({
       numeroReferencia: numeroReferencia || null,
